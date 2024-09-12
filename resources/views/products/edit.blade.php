@@ -1,54 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Produk</title>
-    @vite('resources/css/app.css') <!-- Pastikan Tailwind CSS di-include -->
-</head>
+@section('title', 'Edit Produk')
 
-<body class="bg-gray-100">
+@section('content')
+    <div class="container mx-auto p-6">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Edit Produk</h1>
 
-    <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-bold mb-4">Edit Produk</h1>
+        <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
+            <form action="{{ route('products.update', $product->id) }}" method="POST">
+                @csrf
+                @method('PUT')
 
-        <form action="{{ route('products.update', $product->id) }}" method="POST" class="bg-white p-6 rounded-lg shadow">
-            @csrf
-            @method('PUT')
+                <div class="mb-6">
+                    <label for="name" class="block text-gray-700 text-lg font-medium mb-2">Nama Produk</label>
+                    <input type="text" id="name" name="name" value="{{ old('name', $product->name) }}"
+                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                    @error('name')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div class="mb-4">
-                <label for="name" class="block text-gray-700 font-semibold mb-2">Nama Produk</label>
-                <input type="text" id="name" name="name" value="{{ old('name', $product->name) }}"
-                    class="w-full p-2 border border-gray-300 rounded" required>
-                @error('name')
-                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                @enderror
-            </div>
+                <div class="mb-6">
+                    <label for="price" class="block text-gray-700 text-lg font-medium mb-2">Harga</label>
+                    <input type="number" id="price" name="price" value="{{ old('price', $product->price) }}"
+                        step="0.01"
+                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                    @error('price')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div class="mb-4">
-                <label for="price" class="block text-gray-700 font-semibold mb-2">Harga</label>
-                <input type="number" id="price" name="price" value="{{ old('price', $product->price) }}"
-                    step="0.01" class="w-full p-2 border border-gray-300 rounded" required>
-                @error('price')
-                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                @enderror
-            </div>
+                <div class="mb-6">
+                    <label for="stock" class="block text-gray-700 text-lg font-medium mb-2">Stok</label>
+                    <input type="number" id="stock" name="stock" value="{{ old('stock', $product->stock) }}"
+                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                    @error('stock')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div class="mb-4">
-                <label for="stock" class="block text-gray-700 font-semibold mb-2">Stok</label>
-                <input type="number" id="stock" name="stock" value="{{ old('stock', $product->stock) }}"
-                    class="w-full p-2 border border-gray-300 rounded" required>
-                @error('stock')
-                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Perbarui</button>
-            <a href="{{ route('products.index') }}" class="text-blue-500 hover:text-blue-700 ml-4">Kembali</a>
-        </form>
+                <div class="flex items-center justify-between">
+                    <button type="submit"
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-300">Perbarui</button>
+                    <a href="{{ route('products.index') }}"
+                        class="text-blue-600 hover:text-blue-700 text-lg font-medium">Kembali</a>
+                </div>
+            </form>
+        </div>
     </div>
-
-</body>
-
-</html>
+@endsection

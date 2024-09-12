@@ -1,15 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Produk</title>
-    @vite('resources/css/app.css') <!-- Pastikan Tailwind CSS di-include -->
-</head>
+@section('title', 'Daftar Produk')
 
-<body class="bg-gray-100">
-
+@section('content')
     <div class="container mx-auto p-4">
         <h1 class="text-2xl font-bold mb-4">Daftar Produk</h1>
 
@@ -59,7 +52,4 @@
             </tbody>
         </table>
     </div>
-
-</body>
-
-</html>
+@endsection

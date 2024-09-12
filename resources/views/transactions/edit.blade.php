@@ -1,33 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Transaksi</title>
-    @vite('resources/css/app.css') <!-- Pastikan Tailwind CSS di-include -->
-    <script>
-        function updateTotalPrice() {
-            const productSelect = document.getElementById('product_id');
-            const quantityInput = document.getElementById('quantity');
-            const totalPriceInput = document.getElementById('total_price');
+@section('title', 'Edit Transaksi')
 
-            const selectedOption = productSelect.options[productSelect.selectedIndex];
-            const pricePerUnit = parseFloat(selectedOption.getAttribute('data-price'));
-            const quantity = parseInt(quantityInput.value, 10) || 0;
-
-            const totalPrice = pricePerUnit * quantity;
-            totalPriceInput.value = totalPrice.toFixed(2);
-        }
-    </script>
-</head>
-
-<body class="bg-gray-100">
+@section('main-content')
     <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-bold mb-4">Edit Transaksi</h1>
+        <h1 class="text-3xl font-bold mb-6">Edit Transaksi</h1>
 
         <form action="{{ route('transactions.update', $transaction->id) }}" method="POST"
-            class="bg-white p-6 rounded-lg shadow">
+            class="bg-white p-6 rounded-lg shadow-md">
             @csrf
             @method('PUT')
 
@@ -64,10 +44,26 @@
                     class="w-full p-2 border border-gray-300 rounded" readonly>
             </div>
 
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Update</button>
-            <a href="{{ route('transactions.index') }}" class="text-blue-500 hover:text-blue-700 ml-4">Kembali</a>
+            <div class="flex space-x-4">
+                <button type="submit"
+                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Update</button>
+                <a href="{{ route('transactions.index') }}" class="text-blue-500 hover:text-blue-700">Kembali</a>
+            </div>
         </form>
     </div>
-</body>
 
-</html>
+    <script>
+        function updateTotalPrice() {
+            const productSelect = document.getElementById('product_id');
+            const quantityInput = document.getElementById('quantity');
+            const totalPriceInput = document.getElementById('total_price');
+
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            const pricePerUnit = parseFloat(selectedOption.getAttribute('data-price'));
+            const quantity = parseInt(quantityInput.value, 10) || 0;
+
+            const totalPrice = pricePerUnit * quantity;
+            totalPriceInput.value = totalPrice.toFixed(2);
+        }
+    </script>
+@endsection
