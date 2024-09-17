@@ -2,31 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
-    use HasFactory;
+    protected $fillable = ['total_price', 'payment_method'];
 
-    // Menentukan tabel yang digunakan oleh model ini
-    protected $table = 'transactions';
-
-    // Menentukan atribut yang dapat diisi secara massal
-    protected $fillable = [
-        'product_id',
-        'quantity',
-        'total_price',
-    ];
-
-    // Menggunakan cast untuk atribut decimal
-    protected $casts = [
-        'total_price' => 'decimal:2',
-    ];
-
-    // Mendefinisikan relasi dengan model Product
-    public function product()
+    // Relasi many-to-many dengan produk
+    public function products()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsToMany(Product::class, 'transaction_product')
+            ->withPivot('quantity', 'price')
+            ->withTimestamps();
     }
 }

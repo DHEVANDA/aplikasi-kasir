@@ -12,11 +12,10 @@ return new class extends Migration
     public function up()
     {
         Schema::create('transactions', function (Blueprint $table) {
-            $table->id(); // Primary key
-            $table->foreignId('product_id')->constrained()->onDelete('cascade'); // Foreign key untuk produk
-            $table->integer('quantity'); // Jumlah produk
-            $table->decimal('total_price', 10, 2); // Harga total transaksi
-            $table->timestamps(); // Kolom created_at dan updated_at
+            $table->id();
+            $table->decimal('total_price', 15, 2); // Total harga transaksi
+            $table->string('payment_method'); // Metode pembayaran
+            $table->timestamps(); // Timestamps untuk created_at dan updated_at
         });
     }
 

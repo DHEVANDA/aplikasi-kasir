@@ -14,10 +14,7 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        // Ambil semua transaksi dari database beserta relasi produk
-        $transactions = Transaction::with('product')->get();
-
-        // Tampilkan halaman daftar transaksi dengan data transaksi
+        $transactions = Transaction::with('products')->get();  // Ambil transaksi dengan produk terkait
         return view('transactions.index', compact('transactions'));
     }
 
@@ -26,9 +23,7 @@ class TransactionController extends Controller
      */
     public function create()
     {
-        // Ambil semua produk untuk ditampilkan di form transaksi
         $products = Product::all();
-
         return view('transactions.create', compact('products'));
     }
 
@@ -38,31 +33,37 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-            'total_price' => 'required|numeric',
-            'payment_method' => 'required|in:credit_card,paypal,bank_transfer',
+            'transactions' => 'required|array',
+            'transactions.*.product_id' => 'required|exists:products,id',
+            'transactions.*.quantity' => 'required|integer|min:1',
+            'payment_method' => 'required|string',
         ]);
 
-        $transaction = new Transaction();
-        $transaction->product_id = $request->product_id;
-        $transaction->quantity = $request->quantity;
-        $transaction->total_price = $request->total_price;
-        $transaction->payment_method = $request->payment_method;
-        $transaction->save();
+        // Hitung total harga dari semua transaksi
+        $totalPrice = 0;
+        foreach ($request->transactions as $transaction) {
+            $product = Product::find($transaction['product_id']);
+            $totalPrice += $product->price * $transaction['quantity'];
+        }
 
-        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil ditambahkan!');
+        // Buat transaksi utama
+        $newTransaction = Transaction::create([
+            'total_price' => $totalPrice,
+            'payment_method' => $request->payment_method,
+        ]);
+
+        // Simpan setiap produk dalam transaksi
+        foreach ($request->transactions as $transaction) {
+            $product = Product::find($transaction['product_id']);
+            $newTransaction->products()->attach($product->id, [
+                'quantity' => $transaction['quantity'],
+                'price' => $product->price,
+            ]);
+        }
+
+        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil disimpan!');
     }
 
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Transaction $transaction)
-    {
-        // Menampilkan detail transaksi dengan produk terkait
-        return view('transactions.show', compact('transaction'));
-    }
 
     /**
      * Show the form for editing the specified resource.

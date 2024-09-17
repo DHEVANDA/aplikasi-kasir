@@ -4,50 +4,37 @@
 
 @section('content')
     <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold mb-6">Daftar Transaksi</h1>
+        <h1 class="text-2xl font-bold mb-4">Daftar Transaksi</h1>
 
-        <!-- Formulir untuk memilih transaksi dan cetak PDF -->
-        <form action="{{ route('transactions.printSelectedPdf') }}" method="POST">
-            @csrf
-            <div class="mb-6 flex space-x-4">
-                <a href="{{ route('transactions.create') }}"
-                    class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition">
-                    Tambah Transaksi
-                </a>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition">
-                    Cetak PDF Terpilih
-                </button>
+        @if (session('success'))
+            <div class="bg-green-100 text-green-800 p-2 rounded-lg mb-4">
+                {{ session('success') }}
             </div>
+        @endif
 
-            <!-- Daftar transaksi -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-                    <thead class="bg-gray-100 text-gray-700">
-                        <tr class="border-b">
-                            <th class="py-2 px-4 text-left">Pilih</th>
-                            <th class="py-2 px-4 text-left">ID</th>
-                            <th class="py-2 px-4 text-left">Produk</th>
-                            <th class="py-2 px-4 text-left">Jumlah</th>
-                            <th class="py-2 px-4 text-left">Harga Total</th>
-                            <th class="py-2 px-4 text-left">Tanggal</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-600">
-                        @foreach ($transactions as $transaction)
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="py-2 px-4">
-                                    <input type="checkbox" name="transaction_ids[]" value="{{ $transaction->id }}">
-                                </td>
-                                <td class="py-2 px-4">{{ $transaction->id }}</td>
-                                <td class="py-2 px-4">{{ $transaction->product->name }}</td>
-                                <td class="py-2 px-4">{{ $transaction->quantity }}</td>
-                                <td class="py-2 px-4">${{ number_format($transaction->total_price, 2) }}</td>
-                                <td class="py-2 px-4">{{ $transaction->created_at->format('d-m-Y H:i:s') }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </form>
+        <table class="min-w-full bg-white border">
+            <thead>
+                <tr>
+                    <th class="py-2 px-4 border">ID Transaksi</th>
+                    <th class="py-2 px-4 border">Produk</th>
+                    <th class="py-2 px-4 border">Total Harga</th>
+                    <th class="py-2 px-4 border">Metode Pembayaran</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($transactions as $transaction)
+                    <tr>
+                        <td class="py-2 px-4 border">{{ $transaction->id }}</td>
+                        <td class="py-2 px-4 border">
+                            @foreach ($transaction->products as $product)
+                                {{ $product->name }} ({{ $product->pivot->quantity }}x) <br>
+                            @endforeach
+                        </td>
+                        <td class="py-2 px-4 border">${{ $transaction->total_price }}</td>
+                        <td class="py-2 px-4 border">{{ ucfirst($transaction->payment_method) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 @endsection

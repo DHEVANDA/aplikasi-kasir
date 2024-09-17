@@ -30,7 +30,7 @@
                     @enderror
                 </div>
 
-                <div class="mb-6">
+                {{-- <div class="mb-6">
                     <label for="stock" class="block text-gray-700 text-lg font-medium mb-2">Stok</label>
                     <input type="number" id="stock" name="stock" value="{{ old('stock') }}"
                         class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -38,7 +38,7 @@
                     @error('stock')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
-                </div>
+                </div> --}}
 
                 <div class="flex items-center justify-between">
                     <button type="submit"
