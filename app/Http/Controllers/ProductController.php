@@ -12,12 +12,13 @@ class ProductController extends Controller
      */
     public function index()
     {
-        // Ambil semua produk dari database
-        $products = Product::all();
+        // Ambil produk dengan pagination, 10 produk per halaman
+        $products = Product::paginate(10);
 
         // Tampilkan halaman daftar produk dengan data produk
         return view('products.index', compact('products'));
     }
+
 
 
     /**

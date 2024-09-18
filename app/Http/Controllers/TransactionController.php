@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Transaction;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
@@ -14,7 +15,9 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        $transactions = Transaction::with('products')->get();  // Ambil transaksi dengan produk terkait
+        // Ambil transaksi dengan relasi ke produk dan tambahkan pagination (10 transaksi per halaman)
+        $transactions = Transaction::with('products')->paginate(10);
+
         return view('transactions.index', compact('transactions'));
     }
 
@@ -32,38 +35,40 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
+        // Validasi input
         $request->validate([
+            'name' => 'required|string|max:255',
+            'payment_method' => 'required',
             'transactions' => 'required|array',
             'transactions.*.product_id' => 'required|exists:products,id',
             'transactions.*.quantity' => 'required|integer|min:1',
-            'payment_method' => 'required|string',
         ]);
 
-        // Hitung total harga dari semua transaksi
+        // Hitung total harga
         $totalPrice = 0;
-        foreach ($request->transactions as $transaction) {
-            $product = Product::find($transaction['product_id']);
-            $totalPrice += $product->price * $transaction['quantity'];
+        foreach ($request->transactions as $trans) {
+            $product = Product::findOrFail($trans['product_id']);
+            $totalPrice += $product->price * $trans['quantity'];
         }
 
-        // Buat transaksi utama
-        $newTransaction = Transaction::create([
+        // Simpan transaksi
+        $transaction = Transaction::create([
+            'name' => $request->name,
             'total_price' => $totalPrice,
             'payment_method' => $request->payment_method,
         ]);
 
-        // Simpan setiap produk dalam transaksi
-        foreach ($request->transactions as $transaction) {
-            $product = Product::find($transaction['product_id']);
-            $newTransaction->products()->attach($product->id, [
-                'quantity' => $transaction['quantity'],
-                'price' => $product->price,
+        // Simpan detail produk di pivot table termasuk harga
+        foreach ($request->transactions as $trans) {
+            $product = Product::findOrFail($trans['product_id']);
+            $transaction->products()->attach($trans['product_id'], [
+                'quantity' => $trans['quantity'],
+                'price' => $product->price,  // Masukkan harga produk di pivot table
             ]);
         }
 
-        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil disimpan!');
+        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil disimpan.');
     }
-
 
     /**
      * Show the form for editing the specified resource.
@@ -121,12 +126,59 @@ class TransactionController extends Controller
         return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil dihapus!');
     }
 
-    public function printSelectedPdf(Request $request)
+    // Fungsi untuk menampilkan PDF dari transaksi yang dipilih
+    public function exportPdf($id)
     {
-        $transactionIds = $request->input('transaction_ids', []);
-        $transactions = Transaction::whereIn('id', $transactionIds)->get();
+        // Ambil transaksi berdasarkan ID
+        $transaction = Transaction::with('products')->findOrFail($id);
 
-        $pdf = PDF::loadView('transactions.pdf', compact('transactions'));
-        return $pdf->download('transaksi_terpilih.pdf');
+        // Generate PDF menggunakan view
+        $pdf = PDF::loadView('transactions.pdf', compact('transaction'));
+
+        // Download atau tampilkan PDF
+        return $pdf->download('transaction_' . $id . '.pdf');
+    }
+
+    // Menampilkan form untuk laporan
+    public function reportForm()
+    {
+        return view('transactions.report');
+    }
+
+    // Menampilkan hasil laporan berdasarkan bulan
+    public function generateReport(Request $request)
+    {
+        $request->validate([
+            'month' => 'required|date_format:Y-m',
+        ]);
+
+        // Mengambil transaksi berdasarkan bulan yang dipilih
+        $month = $request->input('month');
+        $transactions = Transaction::whereYear('created_at', Carbon::parse($month)->year)
+            ->whereMonth('created_at', Carbon::parse($month)->month)
+            ->with('products')
+            ->get();
+
+        return view('transactions.report_result', compact('transactions', 'month'));
+    }
+
+    // Ekspor laporan ke PDF berdasarkan bulan yang dipilih
+    public function exportReportPdf(Request $request)
+    {
+        $request->validate([
+            'month' => 'required|date_format:Y-m',
+        ]);
+
+        // Mengambil transaksi berdasarkan bulan yang dipilih
+        $month = $request->input('month');
+        $transactions = Transaction::whereYear('created_at', Carbon::parse($month)->year)
+            ->whereMonth('created_at', Carbon::parse($month)->month)
+            ->with('products')
+            ->get();
+
+        // Generate PDF menggunakan view
+        $pdf = PDF::loadView('transactions.report_pdf', compact('transactions', 'month'));
+
+        return $pdf->download('report_' . $month . '.pdf');
     }
 }

@@ -4,47 +4,45 @@
 
 @section('content')
     <div class="container mx-auto p-6">
-        <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Tambah Produk</h1>
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8 text-center">Tambah Produk</h1>
 
-        <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
+        <div
+            class="max-w-lg mx-auto bg-gradient-to-r from-white via-blue-50 to-white p-8 rounded-2xl shadow-2xl transition-shadow hover:shadow-xl duration-300 ease-in-out">
             <form action="{{ route('products.store') }}" method="POST">
                 @csrf
 
+                <!-- Nama Produk Input -->
                 <div class="mb-6">
-                    <label for="name" class="block text-gray-700 text-lg font-medium mb-2">Nama Produk</label>
+                    <label for="name" class="block text-gray-700 text-lg font-semibold mb-2">Nama Produk</label>
                     <input type="text" id="name" name="name" value="{{ old('name') }}"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required>
+                        class="w-full p-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300"
+                        placeholder="Masukkan nama produk" required>
                     @error('name')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
+                <!-- Harga Produk Input -->
                 <div class="mb-6">
-                    <label for="price" class="block text-gray-700 text-lg font-medium mb-2">Harga</label>
+                    <label for="price" class="block text-gray-700 text-lg font-semibold mb-2">Harga</label>
                     <input type="number" id="price" name="price" value="{{ old('price') }}" step="0.01"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required>
+                        class="w-full p-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300"
+                        placeholder="Masukkan harga produk" required>
                     @error('price')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- <div class="mb-6">
-                    <label for="stock" class="block text-gray-700 text-lg font-medium mb-2">Stok</label>
-                    <input type="number" id="stock" name="stock" value="{{ old('stock') }}"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required>
-                    @error('stock')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div> --}}
-
-                <div class="flex items-center justify-between">
+                <!-- Tombol Simpan dan Kembali -->
+                <div class="flex items-center justify-between mt-8">
                     <button type="submit"
-                        class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-300">Simpan</button>
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-700 hover:shadow-xl transition duration-300 transform hover:scale-105">
+                        Simpan
+                    </button>
                     <a href="{{ route('products.index') }}"
-                        class="text-blue-600 hover:text-blue-700 text-lg font-medium">Kembali</a>
+                        class="text-blue-600 hover:text-blue-700 text-lg font-medium transition-colors duration-300">
+                        Kembali
+                    </a>
                 </div>
             </form>
         </div>
