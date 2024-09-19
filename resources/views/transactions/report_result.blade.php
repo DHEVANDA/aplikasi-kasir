@@ -12,6 +12,16 @@
                 Tidak ada transaksi di bulan ini.
             </div>
         @else
+            <!-- Tombol Cetak PDF -->
+            <form action="{{ route('transactions.exportReportPdf') }}" method="GET" class=" mb-3 mt-6">
+                @csrf
+                <input type="hidden" name="month" value="{{ $month }}">
+                <button type="submit"
+                    class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600 transition duration-300">
+                    Cetak PDF
+                </button>
+            </form>
+
             <div class="overflow-x-auto bg-white shadow-lg rounded-lg">
                 <table class="min-w-full table-auto border-collapse">
                     <thead>
@@ -40,15 +50,7 @@
                 </table>
             </div>
 
-            <!-- Tombol Cetak PDF -->
-            <form action="{{ route('transactions.exportReportPdf') }}" method="GET" class="text-center mt-6">
-                @csrf
-                <input type="hidden" name="month" value="{{ $month }}">
-                <button type="submit"
-                    class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600 transition duration-300">
-                    Cetak PDF
-                </button>
-            </form>
+
         @endif
     </div>
 @endsection

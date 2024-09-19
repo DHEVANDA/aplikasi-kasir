@@ -71,7 +71,7 @@
         <thead>
             <tr>
                 <th>Produk</th>
-                <th>Qty</th>
+                <th>Jumlah</th>
                 <th>Subtotal</th>
             </tr>
         </thead>
@@ -86,7 +86,14 @@
         </tbody>
     </table>
 
-    <!-- Total Harga -->
+    <!-- Total Harga Sebelum Diskon (Jika ada diskon) -->
+    @if ($transaction->discount > 0)
+        <p class="total">Total Sebelum Diskon:
+            Rp{{ number_format($transaction->total_price / (1 - $transaction->discount / 100), 0, ',', '.') }}</p>
+        <p class="total">Diskon: {{ $transaction->discount }}%</p>
+    @endif
+
+    <!-- Total Harga Setelah Diskon -->
     <p class="total">Total: Rp{{ number_format($transaction->total_price, 0, ',', '.') }}</p>
 
     <!-- Bagian Footer -->

@@ -6,11 +6,10 @@
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6 text-center text-gray-900">Tambah Transaksi</h1>
 
-        <form action="{{ route('transactions.store') }}" method="POST"
-            class="bg-white p-8 rounded-lg shadow-2xl max-w-3xl mx-auto">
+        <form action="{{ route('transactions.store') }}" method="POST" class="bg-white p-8 rounded-lg shadow-2xl mx-auto">
             @csrf
 
-            <!-- Input untuk nama transaksi -->
+            <!-- Input untuk nama pembeli -->
             <div class="mb-4">
                 <label for="name" class="block text-gray-700 font-semibold mb-2">Nama Pembeli</label>
                 <input type="text" id="name" name="name"
@@ -20,13 +19,12 @@
 
             <!-- Container untuk transaksi dinamis -->
             <div id="transaction-container">
-                <!-- Contoh Produk -->
                 <div class="transaction-item mb-4 flex items-center space-x-4" data-index="0">
                     <div class="flex-1">
                         <label for="product_id_0" class="block text-gray-700 font-semibold mb-2">Produk</label>
                         <select id="product_id_0" name="transactions[0][product_id]"
                             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm product-select"
-                            onchange="updateTotalPrice()" required>
+                            onchange="handleProductChange(this, 0);" required>
                             <option value="" disabled selected>Pilih Produk</option>
                             @foreach ($products as $product)
                                 <option value="{{ $product->id }}" data-price="{{ $product->price }}">
@@ -38,10 +36,10 @@
 
                     <div class="flex-1">
                         <label for="quantity_0" class="block text-gray-700 font-semibold mb-2">Jumlah</label>
-                        <input type="number" id="quantity_0" name="transactions[0][quantity]" min="1" value="1"
-                            oninput="updateTotalPrice()"
+                        <input type="number" id="quantity_0" name="transactions[0][quantity]" min="1000" value="0"
+                            oninput="checkMinimumQuantity(this); updateTotalPrice();"
                             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm"
-                            required>
+                            required disabled>
                     </div>
 
                     <div class="flex-1">
@@ -51,20 +49,27 @@
                     </div>
 
                     <button type="button"
-                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300 shadow-md remove-transaction-btn">
+                        class="bg-red-500 text-white px-4 py-2 mt-9 rounded-lg hover:bg-red-600 transition duration-300 shadow-md remove-transaction-btn">
                         Hapus
                     </button>
                 </div>
             </div>
 
-            <!-- Tambahkan elemen untuk menampilkan total harga keseluruhan -->
+            <!-- Diskon -->
+            <div class="mb-6">
+                <label for="discount" class="block text-gray-700 font-semibold mb-2">Diskon (%)</label>
+                <input type="number" id="discount" name="discount" min="0" max="100" value="0"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm"
+                    oninput="updateTotalPrice()" required>
+            </div>
+
+            <!-- Total Belanja Keseluruhan -->
             <div class="mb-6">
                 <label for="grand_total" class="block text-gray-700 font-semibold mb-2">Total Belanja Keseluruhan</label>
                 <input type="text" id="grand_total"
                     class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 shadow-sm" value="Rp0,00" readonly>
             </div>
 
-            <!-- Tombol untuk menambah transaksi baru -->
             <button type="button"
                 class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-300 mb-6 shadow-md"
                 id="add-transaction-btn">Tambah Produk</button>
@@ -77,6 +82,7 @@
                     <option value="credit_card">Kartu Kredit</option>
                     <option value="paypal">PayPal</option>
                     <option value="bank_transfer">Transfer Bank</option>
+                    <option value="cash">Cash</option>
                 </select>
             </div>
 
@@ -86,12 +92,11 @@
                     Simpan
                 </button>
                 <a href="{{ route('transactions.index') }}"
-                    class="text-blue-500 hover:text-blue-700 text-lg font-medium">Kembali</a>
+                    class="bg-red-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-600 transition duration-300">Kembali</a>
             </div>
         </form>
     </div>
 
-    <!-- Script untuk memformat dan menghitung harga -->
     <script>
         let transactionCount = 1;
 
@@ -109,8 +114,9 @@
             let grandTotal = 0;
 
             const transactionItems = document.querySelectorAll('.transaction-item');
+            const discountInput = document.getElementById('discount');
+            const discount = parseFloat(discountInput.value) || 0;
 
-            // Cek jika tidak ada transaksi
             if (transactionItems.length === 0) {
                 document.getElementById('grand_total').value = 'Rp0,00'; // Set total menjadi Rp0,00
                 return;
@@ -125,30 +131,59 @@
                 const price = parseFloat(selectedOption.getAttribute('data-price'));
                 const quantity = parseInt(quantityInput.value, 10);
 
-                if (!isNaN(price) && !isNaN(quantity)) {
+                // Pastikan produk dan jumlah valid, jika tidak, set ke 0
+                if (!isNaN(price) && !isNaN(quantity) && quantity >= 1000) {
                     const total = price * quantity;
                     totalPriceInput.value = formatRupiah(total);
                     grandTotal += total; // Tambahkan harga ke total keseluruhan
                 } else {
-                    totalPriceInput.value = 'Rp0,00';
+                    totalPriceInput.value = 'Rp0,00'; // Reset total harga jika produk tidak valid
                 }
             });
 
+            // Hitung grand total setelah diskon
+            if (grandTotal > 0 && discount > 0) {
+                grandTotal = grandTotal - (grandTotal * (discount / 100));
+            }
+
             // Perbarui total belanja keseluruhan
             document.getElementById('grand_total').value = formatRupiah(grandTotal);
+        }
+
+        // Fungsi untuk memeriksa minimum pembelian
+        function checkMinimumQuantity(input) {
+            if (input.value < 1000) {
+                input.value = 1000;
+            }
+        }
+
+        // Fungsi untuk mengatur harga dan jumlah menjadi 0 jika produk tidak dipilih
+        function handleProductChange(selectElement, index) {
+            const quantityInput = document.getElementById(`quantity_${index}`);
+            const totalPriceInput = document.getElementById(`total_price_${index}`);
+
+            if (selectElement.value) {
+                quantityInput.disabled = false;
+                quantityInput.value = 1000; // Set jumlah default ke 1000 setelah produk dipilih
+                totalPriceInput.value = "Rp0,00"; // Reset total harga saat produk diubah
+            } else {
+                // Jika produk tidak jadi dipilih, reset jumlah dan total harga ke 0
+                quantityInput.disabled = true;
+                quantityInput.value = 0;
+                totalPriceInput.value = "Rp0,00";
+            }
+            updateTotalPrice(); // Selalu panggil updateTotalPrice untuk memperbarui total keseluruhan
         }
 
         // Fungsi untuk menambah baris transaksi baru
         document.getElementById('add-transaction-btn').addEventListener('click', function() {
             const transactionContainer = document.getElementById('transaction-container');
 
-            // Template untuk baris transaksi baru
             const newTransactionItem = `
                 <div class="transaction-item mb-4 flex items-center space-x-4" data-index="${transactionCount}">
                     <div class="flex-1">
                         <label for="product_id_${transactionCount}" class="block text-gray-700 font-semibold mb-2">Produk</label>
-                        <select id="product_id_${transactionCount}" name="transactions[${transactionCount}][product_id]" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm product-select"
-                            onchange="updateTotalPrice()" required>
+                        <select id="product_id_${transactionCount}" name="transactions[${transactionCount}][product_id]" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm product-select" onchange="handleProductChange(this, ${transactionCount});" required>
                             <option value="" disabled selected>Pilih Produk</option>
                             @foreach ($products as $product)
                                 <option value="{{ $product->id }}" data-price="{{ $product->price }}">
@@ -160,69 +195,32 @@
 
                     <div class="flex-1">
                         <label for="quantity_${transactionCount}" class="block text-gray-700 font-semibold mb-2">Jumlah</label>
-                        <input type="number" id="quantity_${transactionCount}" name="transactions[${transactionCount}][quantity]" min="1" value="1"
-                            oninput="updateTotalPrice()" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm"
-                            required>
+                        <input type="number" id="quantity_${transactionCount}" name="transactions[${transactionCount}][quantity]" min="1000" value="0" oninput="checkMinimumQuantity(this); updateTotalPrice();" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm" required disabled>
                     </div>
 
                     <div class="flex-1">
                         <label for="total_price_${transactionCount}" class="block text-gray-700 font-semibold mb-2">Harga Total</label>
-                        <input type="text" id="total_price_${transactionCount}" name="transactions[${transactionCount}][total_price]" value="Rp0,00"
-                            class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 shadow-sm" readonly>
+                        <input type="text" id="total_price_${transactionCount}" name="transactions[${transactionCount}][total_price]" value="Rp0,00" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 shadow-sm" readonly>
                     </div>
 
-                    <button type="button" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300 shadow-md remove-transaction-btn">
-                        Hapus
-                    </button>
+                    <button type="button" class="bg-red-500 text-white px-4 py-2 mt-9 rounded-lg hover:bg-red-600 transition duration-300 shadow-md remove-transaction-btn">Hapus</button>
                 </div>
             `;
 
-            // Tambahkan elemen baru ke form
             transactionContainer.insertAdjacentHTML('beforeend', newTransactionItem);
             transactionCount++;
 
             // Daftarkan event listener untuk menghapus baris transaksi
             registerRemoveTransaction();
 
-            // Inisialisasi Select2 di dropdown baru dengan matcher custom
+            // Inisialisasi Select2 pada dropdown baru
             $('.product-select').select2({
                 placeholder: 'Cari Produk',
-                allowClear: true,
-                matcher: matchStart
+                allowClear: true
             });
 
             // Trigger manual update harga total
             updateTotalPrice();
-        });
-
-        // Fungsi custom matcher untuk Select2 (match hanya di awal string)
-        function matchStart(params, data) {
-            // Jika tidak ada term pencarian, tampilkan data asli
-            if ($.trim(params.term) === '') {
-                return data;
-            }
-
-            // Pastikan data memiliki properti text
-            if (typeof data.text === 'undefined') {
-                return null;
-            }
-
-            // Hanya tampilkan hasil yang cocok di awal string
-            if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) === 0) {
-                return $.extend({}, data, true);
-            }
-
-            // Jika tidak cocok, kembalikan null
-            return null;
-        }
-
-        // Inisialisasi Select2 dengan matcher custom pada halaman load
-        $(document).ready(function() {
-            $('.product-select').select2({
-                placeholder: 'Cari Produk',
-                allowClear: true,
-                matcher: matchStart
-            });
         });
 
         // Fungsi untuk mendaftarkan tombol "Hapus" ke setiap baris transaksi
@@ -249,7 +247,7 @@
                 item.setAttribute('data-index', index);
                 item.querySelectorAll('select, input').forEach((el) => {
                     const name = el.name.replace(/\d+/g,
-                    index); // Replace angka pada name dengan index baru
+                        index); // Replace angka pada name dengan index baru
                     el.name = name;
                     el.id = el.id.replace(/\d+/g, index); // Ganti id sesuai index baru
                 });
@@ -258,7 +256,15 @@
             transactionCount = index;
         }
 
-        // Panggil fungsi ini pada load pertama kali untuk mengatur event listener
-        registerRemoveTransaction();
+        // Inisialisasi Select2 pada halaman pertama kali load
+        $(document).ready(function() {
+            $('.product-select').select2({
+                placeholder: 'Cari Produk',
+                allowClear: true
+            });
+
+            // Panggil fungsi ini pada load pertama kali untuk mengatur event listener
+            registerRemoveTransaction();
+        });
     </script>
 @endsection

@@ -7,22 +7,74 @@
     <title>Laporan Bulanan {{ \Carbon\Carbon::parse($month)->format('F Y') }}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        h2 {
+            text-align: center;
+            color: #4A90E2;
+            margin-bottom: 20px;
+            font-size: 24px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: white;
         }
 
         th,
         td {
-            padding: 8px;
-            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 14px;
+            border-bottom: 1px solid #ddd;
         }
 
         th {
-            background-color: #f4f4f4;
+            background-color: #4A90E2;
+            color: white;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        td {
+            color: #555;
+        }
+
+        /* Highlight rows */
+        tbody tr:nth-child(even) {
+            background-color: #f7f7f7;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: #fff;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            table {
+                font-size: 12px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            th,
+            td {
+                padding: 8px 10px;
+            }
         }
     </style>
 </head>
@@ -45,7 +97,7 @@
                     <td>{{ $loop->iteration }}</td>
                     <td>
                         @foreach ($transaction->products as $product)
-                            {{ $product->name }} ({{ $product->pivot->quantity }}x) <br>
+                            {{ $product->name }} ({{ $product->pivot->quantity }}x)<br>
                         @endforeach
                     </td>
                     <td>Rp{{ number_format($transaction->total_price, 0, ',', '.') }}</td>

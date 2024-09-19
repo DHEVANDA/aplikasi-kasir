@@ -25,7 +25,7 @@
                 <!-- Harga Produk Input -->
                 <div class="mb-6">
                     <label for="price" class="block text-gray-700 text-lg font-semibold mb-2">Harga</label>
-                    <input type="number" id="price" name="price" value="{{ old('price') }}" step="0.01"
+                    <input type="text" id="price" name="price" value="{{ old('price') }}"
                         class="w-full p-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-300"
                         placeholder="Masukkan harga produk" required>
                     @error('price')
@@ -34,17 +34,43 @@
                 </div>
 
                 <!-- Tombol Simpan dan Kembali -->
-                <div class="flex items-center justify-between mt-8">
+                <div class="flex items-center justify-center mt-8">
                     <button type="submit"
                         class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-700 hover:shadow-xl transition duration-300 transform hover:scale-105">
                         Simpan
                     </button>
-                    <a href="{{ route('products.index') }}"
-                        class="text-blue-600 hover:text-blue-700 text-lg font-medium transition-colors duration-300">
+                    {{-- <a href="{{ route('products.index') }}"
+                        class="bg-red-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-600 transition duration-300">
                         Kembali
-                    </a>
+                    </a> --}}
                 </div>
             </form>
         </div>
     </div>
+
+    {{-- <!-- Script to format Rupiah input -->
+    <script>
+        const priceInput = document.getElementById('price');
+
+        // Function to format number into Rupiah
+        function formatRupiah(angka, prefix) {
+            var number_string = angka.replace(/[^,\d]/g, '').toString(),
+                split = number_string.split(','),
+                sisa = split[0].length % 3,
+                rupiah = split[0].substr(0, sisa),
+                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+            if (ribuan) {
+                let separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return prefix == undefined ? rupiah : (rupiah ? 'Rp ' + rupiah : '');
+        }
+
+        priceInput.addEventListener('keyup', function(e) {
+            priceInput.value = formatRupiah(this.value, 'Rp ');
+        });
+    </script> --}}
 @endsection

@@ -12,7 +12,7 @@ class Transaction extends Model
     public function products()
     {
         return $this->belongsToMany(Product::class, 'transaction_product')
-            ->withPivot('quantity', 'price') // Menyertakan kolom pivot 'quantity' dan 'price'
-            ->withTimestamps(); // Menambahkan kolom 'created_at' dan 'updated_at'
+            ->withPivot('quantity', 'price')
+            ->withTimestamps();
     }
 }

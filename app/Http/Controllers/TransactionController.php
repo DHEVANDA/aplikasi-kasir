@@ -15,9 +15,7 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        // Ambil transaksi dengan relasi ke produk dan tambahkan pagination (10 transaksi per halaman)
-        $transactions = Transaction::with('products')->paginate(10);
-
+        $transactions = Transaction::with('products')->paginate(10); // 10 transaksi per halaman
         return view('transactions.index', compact('transactions'));
     }
 
@@ -35,39 +33,46 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input
         $request->validate([
-            'name' => 'required|string|max:255',
-            'payment_method' => 'required',
+            'name' => 'required',
             'transactions' => 'required|array',
-            'transactions.*.product_id' => 'required|exists:products,id',
+            'transactions.*.product_id' => 'required',
             'transactions.*.quantity' => 'required|integer|min:1',
+            'discount' => 'required|integer|min:0|max:100',
         ]);
 
-        // Hitung total harga
-        $totalPrice = 0;
-        foreach ($request->transactions as $trans) {
-            $product = Product::findOrFail($trans['product_id']);
-            $totalPrice += $product->price * $trans['quantity'];
+        $total_price = 0;
+        $products = Product::findMany(array_column($request->transactions, 'product_id'));
+
+        foreach ($request->transactions as $key => $transaction) {
+            $product = $products->where('id', $transaction['product_id'])->first();
+            $quantity = $transaction['quantity'];
+            $total_price += $product->price * $quantity;
+        }
+
+        // Hitung total setelah diskon
+        $discount = $request->discount;
+        if ($discount > 0) {
+            $total_price = $total_price - ($total_price * ($discount / 100));
         }
 
         // Simpan transaksi
-        $transaction = Transaction::create([
-            'name' => $request->name,
-            'total_price' => $totalPrice,
-            'payment_method' => $request->payment_method,
-        ]);
+        $transaction = new Transaction();
+        $transaction->name = $request->name;
+        $transaction->total_price = $total_price;
+        $transaction->discount = $discount;
+        $transaction->payment_method = $request->payment_method;
+        $transaction->save();
 
-        // Simpan detail produk di pivot table termasuk harga
-        foreach ($request->transactions as $trans) {
-            $product = Product::findOrFail($trans['product_id']);
-            $transaction->products()->attach($trans['product_id'], [
-                'quantity' => $trans['quantity'],
-                'price' => $product->price,  // Masukkan harga produk di pivot table
+        // Simpan produk dalam transaksi
+        foreach ($request->transactions as $transactionData) {
+            $transaction->products()->attach($transactionData['product_id'], [
+                'quantity' => $transactionData['quantity'],
+                'price' => Product::find($transactionData['product_id'])->price
             ]);
         }
 
-        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil disimpan.');
+        return redirect()->route('transactions.index')->with('success', 'Transaksi berhasil ditambahkan.');
     }
 
     /**
