@@ -8,9 +8,16 @@
 
         <!-- Tampilkan pesan sukses jika ada -->
         @if (session('success'))
-            <div class="bg-green-100 text-green-800 p-4 rounded-lg mb-6 shadow-lg flex items-center justify-center">
-                <i class="fas fa-check-circle mr-2"></i>
-                {{ session('success') }}
+            <div id="success-alert"
+                class="bg-green-100 text-green-800 p-4 rounded-lg shadow-md mb-6 flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    {{ session('success') }}
+                </div>
+                <button class="text-green-800 font-bold ml-4"
+                    onclick="document.getElementById('success-alert').style.display='none'">
+                    &times;
+                </button>
             </div>
         @endif
 

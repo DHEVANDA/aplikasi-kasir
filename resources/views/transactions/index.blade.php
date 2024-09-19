@@ -87,7 +87,7 @@
                                     <!-- Tombol Cetak PDF -->
                                     <a href="{{ route('transactions.pdf', $transaction->id) }}" target="_blank"
                                         class="bg-blue-500 text-white px-5 py-2 rounded-md shadow-md hover:bg-blue-600 transition duration-200 flex items-center">
-                                        <i class="fas fa-print mr-2"></i> Cetak PDF
+                                        <i class="fas fa-print mr-2"></i> Cetak struck
                                     </a>
                                 </div>
                             </td>

@@ -83,8 +83,15 @@
                     <option value="paypal">PayPal</option>
                     <option value="bank_transfer">Transfer Bank</option>
                     <option value="cash">Cash</option>
+                    <option value="ewallet">e-Wallet (GoPay, OVO, etc.)</option>
+                    <option value="qris">QRIS</option>
+                    <option value="virtual_account">Virtual Account</option>
+                    <option value="debit_card">Kartu Debit</option>
+                    <option value="mobile_banking">Mobile Banking</option>
+                    <option value="crypto">Cryptocurrency</option>
                 </select>
             </div>
+
 
             <div class="flex justify-between">
                 <button type="submit"
